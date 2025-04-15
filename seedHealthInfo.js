@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const HealthInfo = require('./models/HealthInfo');
 
-mongoose.connect('mongodb://localhost:27017/healthinfo', {
+mongoose.connect('mongodb+srv://uyu99876a:t7yuegnZKJhFra63@aw.4kg9zlm.mongodb.net/?retryWrites=true&w=majority&appName=aw', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(() => console.log('MongoDB 連線成功'));
