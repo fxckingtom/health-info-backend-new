@@ -7,7 +7,9 @@ const infoRoutes = require('./routes/info');
 
 const app = express();
 
-app.use(cors({ origin: 'https://fxckingtom.github.io' }));
+app.use(cors({
+  origin: ['https://fxckingtom.github.io', 'http://localhost:3000']
+}));
 app.use(express.json());
 
 // 確保 OpenAI 客戶端正確初始化
