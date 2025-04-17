@@ -2,25 +2,25 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const infoRoutes = require('./routes/info');
 const { OpenAI } = require('openai');
+const infoRoutes = require('./routes/info');
 
 const app = express();
 
 app.use(cors({ origin: 'https://fxckingtom.github.io' }));
 app.use(express.json());
 
-
+// 確保 OpenAI 客戶端正確初始化
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-
-// 添加根路徑處理
+// 根路徑處理
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Health Info Backend API' });
 });
 
+// 聊天端點（確保在其他路由之前）
 app.post('/api/chat', async (req, res) => {
   try {
     const { message } = req.body;
@@ -44,7 +44,7 @@ app.post('/api/chat', async (req, res) => {
 // 其他路由
 app.use('/api', infoRoutes);
 
-mongoose.connect('mongodb+srv://uyu99876a:t7yuegnZKJhFra63@aw.4kg9zlm.mongodb.net/?retryWrites=true&w=majority&appName=aw')
+mongoose.connect('mongodb+srv://healthuser:yourpassword123@healthinfocluster.mongodb.net/healthinfo?retryWrites=true&w=majority')
   .then(() => console.log('MongoDB 已連線'))
   .catch((err) => console.error('MongoDB 連線失敗:', err));
 
