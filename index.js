@@ -14,6 +14,7 @@ if (!openaiApiKey) {
 }
 
 // 使用 openaiApiKey 與 OpenAI API 交互
+console.log('使用 OpenAI API Key:', process.env.OPENAI_API_KEY ? '已設置' : '未設置');
 console.log('Using OpenAI API Key:', openaiApiKey);
 app.use(cors({
   origin: ['https://fxckingtom.github.io', 'http://localhost:3000']
