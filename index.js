@@ -46,7 +46,7 @@ app.post('/api/chat', async (req, res) => {
 // 其他路由
 app.use('/api', infoRoutes);
 
-mongoose.connect('mongodb+srv://healthuser:yourpassword123@healthinfocluster.mongodb.net/healthinfo?retryWrites=true&w=majority')
+mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB 已連線'))
   .catch((err) => console.error('MongoDB 連線失敗:', err));
 
