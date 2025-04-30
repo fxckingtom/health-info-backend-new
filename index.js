@@ -4,9 +4,17 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const { OpenAI } = require('openai');
 const infoRoutes = require('./routes/info');
-
 const app = express();
 
+const openaiApiKey = process.env.OPENAI_API_KEY;
+
+if (!openaiApiKey) {
+    console.error('OPENAI_API_KEY is not set');
+    process.exit(1);
+}
+
+// 使用 openaiApiKey 與 OpenAI API 交互
+console.log('Using OpenAI API Key:', openaiApiKey);
 app.use(cors({
   origin: ['https://fxckingtom.github.io', 'http://localhost:3000']
 }));
