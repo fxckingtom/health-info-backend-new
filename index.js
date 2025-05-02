@@ -1,5 +1,7 @@
 require('dotenv').config();
 const express = require('express');
+const path = require('path');
+const fs = require('fs');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const { OpenAI } = require('openai');
@@ -55,8 +57,68 @@ app.post('/api/chat', async (req, res) => {
 // 其他路由
 app.use('/api', infoRoutes);
 
+const DiseaseSchema = new mongoose.Schema({
+  name: String,
+  suitable_foods: [String],
+  description: String
+});
+const Disease = mongoose.model('Disease', DiseaseSchema);
+
+const HealthyRecipeSchema = new mongoose.Schema({
+  name: String,
+  food: String,
+  suitable_diseases: [String],
+  ingredients: [String],
+  steps: [String],
+  explanation: String
+});
+const HealthyRecipe = mongoose.model('HealthyRecipe', HealthyRecipeSchema);
+
+app.get('/api/health-info', async (req, res) => {
+  try {
+    const diseases = await Disease.find();
+    res.json(diseases);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch health info' });
+  }
+});
+
+app.get('/api/healthy-recipes', async (req, res) => {
+  try {
+    const recipes = await HealthyRecipe.find();
+    res.json(recipes);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch healthy recipes' });
+  }
+});
+
+app.get('/api/healthy-recipes-by-food', async (req, res) => {
+  try {
+    const { food } = req.query;
+    if (!food) {
+      return res.status(400).json({ error: '請提供食物名稱' });
+    }
+    const recipes = await HealthyRecipe.find({ food });
+    if (recipes.length === 0) {
+      return res.status(404).json({ error: '未找到該食物的食譜' });
+    }
+    res.json(recipes);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch recipes by food' });
+  }
+});
+
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB 已連線'))
   .catch((err) => console.error('MongoDB 連線失敗:', err));
+
+  const publicPath = path.join(__dirname, 'public');
+
+  if (fs.existsSync(publicPath)) {
+    app.use(express.static(publicPath));
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(publicPath, 'index.html'));
+    });
+  }
 
 app.listen(process.env.PORT || 5000, () => console.log('伺服器運行於端口', process.env.PORT || 5000));
