@@ -1,23 +1,32 @@
 require('dotenv').config();
+
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const { OpenAI } = require('openai');
-const infoRoutes = require('./routes/info');
+//const infoRoutes = require('./routes/info');
+
 const app = express();
 
 const openaiApiKey = process.env.OPENAI_API_KEY;
+const mongodbUri = process.env.MONGODB_URI;
 
 if (!openaiApiKey) {
-    console.error('OPENAI_API_KEY is not set');
-    process.exit(1);
+  console.error('OPENAI_API_KEY is not set');
+  process.exit(1);
 }
 
-// 使用 openaiApiKey 與 OpenAI API 交互
-console.log('使用 OpenAI API Key:', process.env.OPENAI_API_KEY ? '已設置' : '未設置');
+if (!mongodbUri) {
+  console.error('MONGODB_URI is not set');
+  process.exit(1);
+}
+
+console.log('使用 OpenAI API Key:', openaiApiKey ? '已設置' : '未設置');
 console.log('Using OpenAI API Key:', openaiApiKey);
+console.log('Using MONGODB_URI:', mongodbUri ? '已設置' : '未設置');
+
 app.use(cors({
   origin: ['https://fxckingtom.github.io', 'http://localhost:3000']
 }));
@@ -33,7 +42,7 @@ app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Health Info Backend API' });
 });
 
-// 聊天端點（確保在其他路由之前）
+// 聊天端點
 app.post('/api/chat', async (req, res) => {
   try {
     const { message } = req.body;
@@ -55,7 +64,7 @@ app.post('/api/chat', async (req, res) => {
 });
 
 // 其他路由
-app.use('/api', infoRoutes);
+//app.use('/api', infoRoutes);
 
 const DiseaseSchema = new mongoose.Schema({
   name: String,
@@ -108,17 +117,24 @@ app.get('/api/healthy-recipes-by-food', async (req, res) => {
   }
 });
 
-mongoose.connect(process.env.MONGODB_URI)
+// 連線 MongoDB
+mongoose.connect(mongodbUri, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('MongoDB 已連線'))
-  .catch((err) => console.error('MongoDB 連線失敗:', err));
+  .catch((err) => {
+    console.error('MongoDB 連線失敗:', err);
+    process.exit(1); // 如果連線失敗，終止應用程式
+  });
 
-  const publicPath = path.join(__dirname, 'public');
+// 靜態文件處理（僅在 public 目錄存在時啟用）
+const publicPath = path.join(__dirname, 'public');
+if (fs.existsSync(publicPath)) {
+  app.use(express.static(publicPath));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(publicPath, 'index.html'));
+  });
+} else {
+  console.warn('Public directory not found, static file serving disabled.');
+}
 
-  if (fs.existsSync(publicPath)) {
-    app.use(express.static(publicPath));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(publicPath, 'index.html'));
-    });
-  }
-
-app.listen(process.env.PORT || 5000, () => console.log('伺服器運行於端口', process.env.PORT || 5000));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log('伺服器運行於端口', PORT));
