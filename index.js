@@ -118,6 +118,13 @@ app.get('/api/healthy-recipes-by-food', async (req, res) => {
   }
 });
 
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
+
 // 連線 MongoDB
 mongoose.connect(mongodbUri, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('MongoDB 已連線'))
