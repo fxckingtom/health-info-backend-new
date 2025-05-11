@@ -129,9 +129,13 @@ mongoose.connect(mongodbUri, { useNewUrlParser: true, useUnifiedTopology: true }
 const publicPath = path.join(__dirname, 'public');
 if (fs.existsSync(publicPath)) {
   app.use(express.static(publicPath));
-  app.get('*', (req, res) => {
+
+  // **只針對非 API 路由做處理**
+  app.get(/^\/(?!api).*/, (req, res) => {
     res.sendFile(path.join(publicPath, 'index.html'));
   });
+}
+
 } else {
   console.warn('Public directory not found, static file serving disabled.');
 }
