@@ -133,16 +133,17 @@ mongoose.connect(mongodbUri, { useNewUrlParser: true, useUnifiedTopology: true }
     process.exit(1); // 如果連線失敗，終止應用程式
   });
 
-const buildPath = path.join(__dirname, 'build');
-if (fs.existsSync(buildPath)) {
-  app.use(express.static(buildPath));
+// 靜態文件處理（僅在 public 目錄存在時啟用）
+const publicPath = path.join(__dirname, 'public');
+if (fs.existsSync(publicPath)) {
+  app.use(express.static(publicPath));
 
-  // ⭐⭐ 關鍵：所有非 /api 的路由，一律回傳 index.html 給 React 處理 ⭐⭐
+  // **只針對非 API 路由做處理**
   app.get(/^\/(?!api).*/, (req, res) => {
-    res.sendFile(path.join(buildPath, 'index.html'));
+    res.sendFile(path.join(publicPath, 'index.html'));
   });
 } else {
-  console.warn('Build directory not found. Static file serving disabled.');
+  console.warn('Public directory not found, static file serving disabled.');
 }
 
 const PORT = process.env.PORT || 5000;
