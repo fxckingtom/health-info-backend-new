@@ -134,8 +134,6 @@ if (fs.existsSync(publicPath)) {
   app.get(/^\/(?!api).*/, (req, res) => {
     res.sendFile(path.join(publicPath, 'index.html'));
   });
-}
-
 } else {
   console.warn('Public directory not found, static file serving disabled.');
 }
