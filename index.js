@@ -137,12 +137,12 @@ const buildPath = path.join(__dirname, 'build');
 if (fs.existsSync(buildPath)) {
   app.use(express.static(buildPath));
 
-  // 把所有非 API 的請求都交給 React 前端處理
+  // ⭐⭐ 關鍵：所有非 /api 的路由，一律回傳 index.html 給 React 處理 ⭐⭐
   app.get(/^\/(?!api).*/, (req, res) => {
     res.sendFile(path.join(buildPath, 'index.html'));
   });
 } else {
-  console.warn('Public directory not found, static file serving disabled.');
+  console.warn('Build directory not found. Static file serving disabled.');
 }
 
 const PORT = process.env.PORT || 5000;
