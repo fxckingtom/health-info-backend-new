@@ -1,11 +1,5 @@
 require('dotenv').config();
 
-<script
-  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBTlqHAPuKk7ImTi739UXII-eFTIgMPGtg"
-  async
-  defer
-></script>
-
 
 const express = require('express');
 const path = require('path');
