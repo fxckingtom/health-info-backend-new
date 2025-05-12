@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
-const HealthInfo = require('./models/HealthInfo');
+const Disease = require('./models/Disease');
+
 
 
 mongoose.connect('mongodb://localhost:27017/healthinfo', {
