@@ -71,6 +71,8 @@ const DiseaseSchema = new mongoose.Schema({
   name: String,
   suitable_foods: [String],
   description: String
+  tagline: String, // 新增
+  handling: [String] // 新增
 });
 const Disease = mongoose.model('Disease', DiseaseSchema);
 
