@@ -70,10 +70,11 @@ app.post('/api/chat', async (req, res) => {
 const DiseaseSchema = new mongoose.Schema({
   name: String,
   suitable_foods: [String],
-  description: String
-  tagline: String, // 新增
-  handling: [String] // 新增
+  description: String,
+  tagline: String,
+  handling: [String]
 });
+
 const Disease = mongoose.model('Disease', DiseaseSchema);
 
 const HealthyRecipeSchema = new mongoose.Schema({
