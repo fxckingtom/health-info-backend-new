@@ -446,7 +446,7 @@ const diseases = [
 async function seed() {
   try {
     await HealthInfo.deleteMany({});
-    await HealthInfo.insertMany(diseases);
+    await Disease.insertMany(diseases);
     console.log('疾病數據導入成功');
     process.exit();
   } catch (error) {
