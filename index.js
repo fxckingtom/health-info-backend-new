@@ -1,6 +1,5 @@
 require('dotenv').config();
 
-
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
@@ -111,13 +110,16 @@ app.get('/api/healthy-recipes-by-food', async (req, res) => {
     if (!food) {
       return res.status(400).json({ error: '請提供食物名稱' });
     }
-    const recipes = await HealthyRecipe.find({ food });
+    const recipes = await HealthyRecipe.find({
+      food: { $regex: new RegExp(food, 'i') }
+    });
     if (recipes.length === 0) {
       return res.status(404).json({ error: '未找到該食物的食譜' });
     }
     res.json(recipes);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch recipes by food' });
+    console.error('取得食譜時錯誤：', err);
+    res.status(500).json({ error: '伺服器錯誤' });
   }
 });
 
