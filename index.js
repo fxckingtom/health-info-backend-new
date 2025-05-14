@@ -1,5 +1,3 @@
-// 把這行放在所有 route 之前
-app.use(require('cors')());
 
 require('dotenv').config();
 
