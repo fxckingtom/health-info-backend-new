@@ -1,51 +1,44 @@
-// 把這行放在所有 route 之前
-app.use(require('cors')());
-
 require('dotenv').config();
 
 const express = require('express');
+const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const mongoose = require('mongoose');
-const cors = require('cors');
 const { OpenAI } = require('openai');
-//const infoRoutes = require('./routes/info');
+
+// Models
+const HealthInfo = require('./models/HealthInfo');
+const HealthyRecipe = require('./models/HealthyRecipe');
 
 const app = express();
 
+// Enable CORS for all routes
+app.use(cors());
+app.use(express.json());
+
+// Environment variables
 const openaiApiKey = process.env.OPENAI_API_KEY;
 const mongodbUri = process.env.MONGODB_URI;
 
 if (!openaiApiKey) {
-  console.error('OPENAI_API_KEY is not set');
+  console.error('❌ OPENAI_API_KEY is not set');
   process.exit(1);
 }
-
 if (!mongodbUri) {
-  console.error('MONGODB_URI is not set');
+  console.error('❌ MONGODB_URI is not set');
   process.exit(1);
 }
 
-console.log('使用 OpenAI API Key:', openaiApiKey ? '已設置' : '未設置');
-console.log('Using OpenAI API Key:', openaiApiKey);
-console.log('Using MONGODB_URI:', mongodbUri ? '已設置' : '未設置');
+// Initialize OpenAI client
+const openai = new OpenAI({ apiKey: openaiApiKey });
 
-app.use(cors({
-  origin: ['https://fxckingtom.github.io', 'http://localhost:3000']
-}));
-app.use(express.json());
-
-// 確保 OpenAI 客戶端正確初始化
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-// 根路徑處理
+// Root endpoint
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Health Info Backend API' });
 });
 
-// 聊天端點
+// Chat endpoint
 app.post('/api/chat', async (req, res) => {
   try {
     const { message } = req.body;
@@ -55,9 +48,9 @@ app.post('/api/chat', async (req, res) => {
     const response = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
-        { role: 'system', content: '你是一個健康資訊助手，專注於提供疾病相關資訊和建議。' },
-        { role: 'user', content: message },
-      ],
+        { role: 'system', content: '你是一個健康資訊助手，專注於提供疾病相關資訊和建議。請只使用繁體中文回答。' },
+        { role: 'user', content: message }
+      ]
     });
     res.json({ reply: response.choices[0].message.content });
   } catch (error) {
@@ -66,47 +59,29 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-// 其他路由
-//app.use('/api', infoRoutes);
-
-const DiseaseSchema = new mongoose.Schema({
-  name: String,
-  suitable_foods: [String],
-  description: String,
-  tagline: String,
-  handling: [String]
-});
-
-const Disease = mongoose.model('Disease', DiseaseSchema);
-
-const HealthyRecipeSchema = new mongoose.Schema({
-  name: String,
-  food: String,
-  suitable_diseases: [String],
-  ingredients: [String],
-  steps: [String],
-  explanation: String
-});
-const HealthyRecipe = mongoose.model('HealthyRecipe', HealthyRecipeSchema);
-
+// Health Info endpoint - fetches Chinese seed data
 app.get('/api/health-info', async (req, res) => {
   try {
-    const diseases = await Disease.find();
-    res.json(diseases);
+    const infos = await HealthInfo.find();
+    res.json(infos);
   } catch (err) {
+    console.error('取得健康資訊錯誤：', err);
     res.status(500).json({ error: 'Failed to fetch health info' });
   }
 });
 
+// Healthy Recipes endpoint
 app.get('/api/healthy-recipes', async (req, res) => {
   try {
     const recipes = await HealthyRecipe.find();
     res.json(recipes);
   } catch (err) {
+    console.error('取得食譜列表錯誤：', err);
     res.status(500).json({ error: 'Failed to fetch healthy recipes' });
   }
 });
 
+// Filtered Recipes by food (supports Chinese & English via regex)
 app.get('/api/healthy-recipes-by-food', async (req, res) => {
   try {
     const { food } = req.query;
@@ -116,7 +91,7 @@ app.get('/api/healthy-recipes-by-food', async (req, res) => {
     const recipes = await HealthyRecipe.find({
       food: { $regex: new RegExp(food, 'i') }
     });
-    if (recipes.length === 0) {
+    if (!recipes.length) {
       return res.status(404).json({ error: '未找到該食物的食譜' });
     }
     res.json(recipes);
@@ -126,33 +101,26 @@ app.get('/api/healthy-recipes-by-food', async (req, res) => {
   }
 });
 
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
-});
-
-
-// 連線 MongoDB
+// Connect to MongoDB
 mongoose.connect(mongodbUri, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('MongoDB 已連線'))
-  .catch((err) => {
-    console.error('MongoDB 連線失敗:', err);
-    process.exit(1); // 如果連線失敗，終止應用程式
+  .then(() => console.log('✅ MongoDB 已連線'))
+  .catch(err => {
+    console.error('❌ MongoDB 連線失敗：', err);
+    process.exit(1);
   });
 
-// 靜態文件處理（僅在 public 目錄存在時啟用）
+// Serve static files if public folder exists
 const publicPath = path.join(__dirname, 'public');
 if (fs.existsSync(publicPath)) {
   app.use(express.static(publicPath));
-
-  // **只針對非 API 路由做處理**
   app.get(/^\/(?!api).*/, (req, res) => {
     res.sendFile(path.join(publicPath, 'index.html'));
   });
 } else {
-  console.warn('Public directory not found, static file serving disabled.');
+  console.warn('Public directory not found, static serving disabled.');
 }
 
+// Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log('伺服器運行於端口', PORT));
+app.listen(PORT, () => console.log(`🚀 伺服器運行於端口 ${PORT}`));
+
