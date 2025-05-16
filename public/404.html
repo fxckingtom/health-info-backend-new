@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Redirecting…</title>
+  <script type="text/javascript">
+    // spa-github-pages 用的 404 -> index.html 重定向
+    // 保留 hash（#/…）部分，並且加上你的 repo 前綴
+    (function() {
+      var path = window.location.pathname;
+      var hash = window.location.hash;
+      // 例: path="/health-info-frontend-new/health-info"
+      //      hash="" (直接網址)
+      // 組回 /health-info-frontend-new/#/health-info
+      var base = '/health-info-frontend-new';
+      window.location.replace(base + '/#' + path.replace(base, '') + hash);
+    })();
+  </script>
+</head>
+<body></body>
+</html>
+
