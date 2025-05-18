@@ -8,6 +8,7 @@ const mongoose = require('mongoose');
 const { OpenAI } = require('openai');
 
 const HealthInfo = require('./models/HealthInfo');
+const HealthLog = require('./models/HealthLog');
 const HealthyRecipe = require('./models/HealthyRecipe');
 
 const app = express();
@@ -67,6 +68,19 @@ app.get('/api/health-info', async (req, res) => {
     console.error('取得健康資訊錯誤：', err);
     res.status(500).json({ error: 'Failed to fetch health info' });
   }
+});
+
+app.post('/api/health-log', async (req, res) => {
+  try {
+    const log = await HealthLog.create(req.body);
+    res.json(log);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+app.get('/api/health-log', async (req, res) => {
+  const logs = await HealthLog.find().sort({ date: -1 });
+  res.json(logs);
 });
 
 // Healthy Recipes endpoint
