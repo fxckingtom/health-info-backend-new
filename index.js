@@ -131,6 +131,10 @@ mongoose.connect(mongodbUri, { useNewUrlParser: true, useUnifiedTopology: true }
     process.exit(1);
   });
 
+app.use('/api/health-info',    healthInfoRouter);
+app.use('/api/health-log',     healthLogRouter);
+app.use('/api/healthy-recipes', healthyRecipeRouter);
+
 // Serve static files if public folder exists
 const publicPath = path.join(__dirname, 'public');
 if (fs.existsSync(publicPath)) {
