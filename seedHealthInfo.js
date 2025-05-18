@@ -1,12 +1,18 @@
+require('dotenv').config()
 const mongoose = require('mongoose');
 const HealthInfo = require('./models/HealthInfo');
 
+async function seed() {
+  try {
+    await mongoose.connect('mongodb://localhost:27017/healthinfo', {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log('✅ MongoDB 連線成功');
 
-
-mongoose.connect('mongodb://localhost:27017/healthinfo', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-}).then(() => console.log('MongoDB 連線成功'));
+    // 清空舊資料（視需求可註解）
+    await HealthInfo.deleteMany({});
+    console.log('🗑️ 已清空 HealthInfo 集合');
 
 const diseases = [
   {
@@ -443,15 +449,14 @@ const diseases = [
   }
 ];
 
-async function seed() {
-  try {
-    await HealthInfo.deleteMany({});
-    await Disease.insertMany(diseases);
-    console.log('疾病數據導入成功');
-    process.exit();
-  } catch (error) {
-    console.error('導入失敗:', error);
-    process.exit(1);
+ await HealthInfo.insertMany(diseases);
+    console.log(`✅ 成功新增 ${diseases.length} 筆疾病資料`);
+
+  } catch (err) {
+    console.error('❌ 種子資料失敗：', err);
+  } finally {
+    await mongoose.disconnect();
+    console.log('🔌 MongoDB 連線已關閉');
   }
 }
 
