@@ -4,7 +4,7 @@ const HealthInfo = require('./models/HealthInfo');
 
 async function seed() {
   try {
-    await mongoose.connect('mongodb+srv://uyu99876a:RcLOQqyNy0Rd9zXZ@aw.4kg9zlm.mongodb.net/?retryWrites=true&w=majority&appName=aw', {
+    await mongoose.connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
