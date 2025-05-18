@@ -1,23 +1,16 @@
-
 require('dotenv').config();
 const mongoose = require('mongoose');
 
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('✅ Connected to MongoDB'))
-  .catch(err => {
-    console.error('❌ MongoDB connection error:', err);
-    process.exit(1);
-  });
-
-const HealthyRecipeSchema = new mongoose.Schema({
-  name: String,
-  food: String,
-  suitable_diseases: [String],
-  ingredients: [String],
-  steps: [String],
-  explanation: String
-});
+const HealthyRecipeSchema = new mongoose.Schema({ … });
 const HealthyRecipe = mongoose.model('HealthyRecipe', HealthyRecipeSchema);
+
+async function seedRecipes() {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log('✅ Connected to MongoDB');
+
+    await HealthyRecipe.deleteMany({});
+    console.log('🗑️ 已清空 HealthyRecipe 集合');
 
 const healthyRecipesZH = [
   {
@@ -2002,16 +1995,15 @@ const healthyRecipesZH = [
   }
 ];
 
-async function update() {
-  try {
-    await HealthyRecipe.deleteMany({});
-    await HealthyRecipe.insertMany(healthyRecipesZH);
-    console.log('✅ 中文健康食譜已匯入');
-    mongoose.connection.close();
+await HealthyRecipe.insertMany(healthyRecipesZH);
+    console.log(`✅ 成功新增 ${healthyRecipesZH.length} 筆健康食譜`);
+
   } catch (err) {
-    console.error('❌ 匯入失敗:', err);
-    mongoose.connection.close();
+    console.error('❌ 健康食譜種子失敗：', err);
+  } finally {
+    await mongoose.disconnect();
+    console.log('🔌 MongoDB 連線已關閉');
   }
 }
 
-update();
+seedRecipes();
