@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const Disease = require('./models/Disease');
+const HealthInfo = require('./models/HealthInfo');
 
 
 
