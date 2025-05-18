@@ -70,17 +70,26 @@ app.get('/api/health-info', async (req, res) => {
   }
 });
 
+// POST /api/health-log：新增一笔日记
 app.post('/api/health-log', async (req, res) => {
   try {
     const log = await HealthLog.create(req.body);
     res.json(log);
-  } catch (e) {
-    res.status(500).json({ error: e.message });
+  } catch (err) {
+    console.error('保存健康日誌失敗：', err);
+    res.status(500).json({ error: err.message });
   }
 });
+
+// GET /api/health-log：取得所有日记，按时间倒序
 app.get('/api/health-log', async (req, res) => {
-  const logs = await HealthLog.find().sort({ date: -1 });
-  res.json(logs);
+  try {
+    const logs = await HealthLog.find().sort({ date: -1, time: -1 });
+    res.json(logs);
+  } catch (err) {
+    console.error('獲取健康日誌失敗：', err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Healthy Recipes endpoint
