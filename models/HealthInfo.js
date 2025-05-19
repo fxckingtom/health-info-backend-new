@@ -1,16 +1,14 @@
-// models/HealthLog.js
+// models/HealthInfo.js
 
 const mongoose = require('mongoose');
 
-const HealthLogSchema = new mongoose.Schema({
-  bloodPressure: { type: String, required: true },
-  weight:        { type: Number, required: true },
-  date:          { type: Date,   required: true },
-  time:          { type: String, required: true },
-  medicationTaken: { type: Boolean, default: false },
-  mood:          { type: String, default: '' },
+const HealthInfoSchema = new mongoose.Schema({
+  name:        { type: String, required: true },
+  description: { type: String, required: true },
+  symptoms:    { type: String },
+  treatment:   { type: String }
 }, {
   timestamps: true
 });
 
-module.exports = mongoose.model('HealthLog', HealthLogSchema);
+module.exports = mongoose.model('HealthInfo', HealthInfoSchema);
