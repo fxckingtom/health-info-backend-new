@@ -19,8 +19,9 @@ router.get('/search', async (req, res) => {
     const { food } = req.query;
     if (!food) return res.status(400).json({ error: '請提供食物名稱' });
 
+    // 查 ingredients 陣列中包含特定關鍵字的資料
     const recipes = await HealthyRecipe.find({
-      food: { $regex: new RegExp(food, 'i') }
+      ingredients: { $elemMatch: { $regex: new RegExp(food, 'i') } }
     });
 
     if (!recipes.length) {
@@ -32,5 +33,6 @@ router.get('/search', async (req, res) => {
     res.status(500).json({ error: '伺服器錯誤' });
   }
 });
+
 
 module.exports = router;
