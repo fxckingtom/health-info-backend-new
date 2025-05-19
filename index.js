@@ -7,9 +7,9 @@ const fs = require('fs');
 const mongoose = require('mongoose');
 const { OpenAI } = require('openai');
 
-const HealthInfo = require('./models/HealthInfo');
-const HealthLog = require('./models/HealthLog');
-const HealthyRecipe = require('./models/HealthyRecipe');
+const HealthInfo = require('./routes/healthInfo');
+const HealthLog = require('./routes/healthLog');
+const HealthyRecipe = require('./routes/healthyRecipe');
 
 const app = express();
 
