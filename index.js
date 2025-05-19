@@ -8,8 +8,8 @@ const mongoose = require('mongoose');
 const { OpenAI } = require('openai');
 
 const healthInfoRoutes = require('./routes/healthInfo'); // 引用路由模組
-const HealthLog = require('./routes/healthLog');
-const HealthyRecipe = require('./routes/healthyRecipe');
+const HealthLogRoutes = require('./routes/healthLog');
+const HealthyRecipeRoutes = require('./routes/healthyRecipe');
 
 const app = express();
 
@@ -68,8 +68,8 @@ mongoose.connect(mongodbUri, { useNewUrlParser: true, useUnifiedTopology: true }
   });
 
 app.use('/api/health-info', healthInfoRoutes);           // 使用路由
-app.use('/api/health-log',     HealthLog);
-app.use('/api/healthy-recipes', HealthyRecipe);
+app.use('/api/health-log',     HealthLogRoutes);
+app.use('/api/healthy-recipes', HealthyRecipeRoutes);
 
 // Serve static files if public folder exists
 const publicPath = path.join(__dirname, 'public');
