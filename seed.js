@@ -1,7 +1,7 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 
-const HealthInfo = require('./models/HealthRecipe');
+const HealthInfo = require('./models/HealthyRecipe');
 
 async function seedRecipes() {
   try {
