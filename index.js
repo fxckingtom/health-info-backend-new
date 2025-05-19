@@ -7,7 +7,7 @@ const fs = require('fs');
 const mongoose = require('mongoose');
 const { OpenAI } = require('openai');
 
-const HealthInfo = require('./routes/healthInfo');
+const healthInfoRoutes = require('./routes/healthInfo'); // 引用路由模組
 const HealthLog = require('./routes/healthLog');
 const HealthyRecipe = require('./routes/healthyRecipe');
 
@@ -67,7 +67,7 @@ mongoose.connect(mongodbUri, { useNewUrlParser: true, useUnifiedTopology: true }
     process.exit(1);
   });
 
-app.use('/api/health-info',    HealthInfo);
+app.use('/api/health-info', healthInfoRoutes);           // 使用路由
 app.use('/api/health-log',     HealthLog);
 app.use('/api/healthy-recipes', HealthyRecipe);
 
