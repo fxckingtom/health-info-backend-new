@@ -67,9 +67,9 @@ mongoose.connect(mongodbUri, { useNewUrlParser: true, useUnifiedTopology: true }
     process.exit(1);
   });
 
-app.use('/routes/health-info',    HealthInfo);
-app.use('/routes/health-log',     HealthLog);
-app.use('/routes/healthy-recipes', HealthyRecipe);
+app.use('/api/health-info',    HealthInfo);
+app.use('/api/health-log',     HealthLog);
+app.use('/api/healthy-recipes', HealthyRecipe);
 
 // Serve static files if public folder exists
 const publicPath = path.join(__dirname, 'public');
