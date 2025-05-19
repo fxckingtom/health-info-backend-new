@@ -14,7 +14,12 @@ const HealthyRecipeRoutes = require('./routes/healthyRecipe');
 const app = express();
 
 // Enable CORS for all routes
-app.use(cors());
+app.use(cors({
+  origin: 'https://fcxkingtom.github.io', // ✅ 指定 GitHub Pages 網址
+  methods: ['GET', 'POST', 'DELETE'],
+  credentials: false // 你目前沒有使用登入身分驗證，可設為 false
+}));
+
 app.use(express.json());
 
 // Environment variables
