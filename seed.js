@@ -11,7 +11,7 @@ async function seedRecipes() {
     await HealthyRecipe.deleteMany({});
     console.log('🗑️ 已清空 HealthyRecipe 集合');
 
-const lowCarbRecipes = [
+const healthyRecipesZH = [
   {
     name: '檸檬香煎鮭魚',
     category: '低醣',
