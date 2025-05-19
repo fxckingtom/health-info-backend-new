@@ -1,8 +1,7 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 
-const HealthyRecipeSchema = new mongoose.Schema({ … });
-const HealthyRecipe = mongoose.model('HealthyRecipe', HealthyRecipeSchema);
+const HealthInfo = require('./models/HealthRecipe');
 
 async function seedRecipes() {
   try {
