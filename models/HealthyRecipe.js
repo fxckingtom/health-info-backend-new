@@ -6,7 +6,7 @@ const healthyRecipeSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, '請輸入食譜名稱'],
+      required: [true, '食譜名稱'],
       trim: true
     },
     category: {
