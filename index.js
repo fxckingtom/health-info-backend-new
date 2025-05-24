@@ -32,35 +32,6 @@ if (!mongodbUri) {
 
 // Initialize OpenAI client
 const openai = new OpenAI({ apiKey: openaiApiKey });
-  
-//用 LLM 做簡單二元分類：是否為健康領域問題
-async function isHealthDomain(question) {
-  const resp = await openai.chat.completions.create({
-    model: 'gpt-3.5-turbo',
-    temperature: 0,
-    max_tokens: 5,
-    messages: [
-      {
-      role: 'system',
-      content: [
-        '你是一個健康資訊助手，只能回答「疾病、營養、運動、心理」等健康領域問題；',
-        '請用繁體中文回答。',
-        '',
-        '回答時，**請遵循以下結構**：',
-        '1. **重點摘要**：用 1～2 句話快速說明答案核心；',
-        '2. **詳細說明**：以條列或編號列出重要步驟或要點；',
-        '3. **補充建議**：提供額外注意事項或相關資源（如有）。',
-        '',
-        '若收到任何非健康領域問題，一律回覆：',
-        '「對不起，我只能回答健康相關的問題。」'
-      ].join('\n')
-    },
-      { role: 'user', content: question }
-    ],
-  });
-  const ans = resp.choices[0].message.content.trim().toLowerCase();
-  return ans.startsWith('是') || ans.startsWith('yes');
-}
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -74,38 +45,27 @@ app.post('/api/chat', async (req, res) => {
     if (!message) {
       return res.status(400).json({ error: '請提供訊息' });
     }
-
-    // 先做健康領域分類
-    const ok = await isHealthDomain(message);
-    if (!ok) {
-      return res.json({
-        reply: '對不起，我只能回答健康相關的問題，請提出健康／醫療方面的疑問。'
-      });
-    }
-
-    // 通過後才下真正的 system prompt
-    const chat = await openai.chat.completions.create({
+    const response = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
         {
           role: 'system',
           content: [
             '你是一個健康資訊助手，只能回答「疾病、營養、運動、心理」等健康領域問題；',
-            '請用繁體中文回答；',
-            '若收到任何非健康領域問題，一律回覆：',
-            '「對不起，我只能回答健康相關的問題。」'
+            '請使用繁體中文。',
+            '當你回答時，**請使用以下結構**：',
+            '1. **重點摘要**：用 1～2 句話快速說明。',
+            '2. **詳細說明**：條列式或編號式列出關鍵步驟或要點。',
+            '3. **補充建議**（如有需要，可提供額外提示或注意事項）。',
+            '若收到任何非健康領域問題，一律回覆：「對不起，我只能回答健康相關的問題。」'
           ].join('\n')
         },
         { role: 'user', content: message }
-      ],
-      temperature: 0.7,
-      max_tokens: 512,
+      ]
     });
-
-    res.json({ reply: chat.choices[0].message.content.trim() });
-
-  } catch (err) {
-    console.error('❌ Chat API error:', err);
+    res.json({ reply: response.choices[0].message.content });
+  } catch (error) {
+    console.error('OpenAI API 錯誤:', error);
     res.status(500).json({ error: '無法處理聊天請求' });
   }
 });
