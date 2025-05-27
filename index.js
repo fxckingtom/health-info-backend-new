@@ -1,5 +1,8 @@
-require('dotenv').config();
+@@ -1,155 +1,158 @@
+// 把這行放在所有 route 之前
+app.use(require('cors')());
 
+require('dotenv').config();
 
 const express = require('express');
 const path = require('path');
@@ -70,8 +73,11 @@ res.status(500).json({ error: '無法處理聊天請求' });
 const DiseaseSchema = new mongoose.Schema({
 name: String,
 suitable_foods: [String],
-description: String
+description: String,
+tagline: String,
+handling: [String]
 });
+
 const Disease = mongoose.model('Disease', DiseaseSchema);
 
 const HealthyRecipeSchema = new mongoose.Schema({
@@ -108,13 +114,16 @@ const { food } = req.query;
 if (!food) {
 return res.status(400).json({ error: '請提供食物名稱' });
 }
-const recipes = await HealthyRecipe.find({ food });
+const recipes = await HealthyRecipe.find({
+food: { $regex: new RegExp(food, 'i') }
+});
 if (recipes.length === 0) {
 return res.status(404).json({ error: '未找到該食物的食譜' });
 }
 res.json(recipes);
 } catch (err) {
-res.status(500).json({ error: 'Failed to fetch recipes by food' });
+console.error('取得食譜時錯誤：', err);
+res.status(500).json({ error: '伺服器錯誤' });
 }
 });
 
@@ -133,23 +142,17 @@ console.error('MongoDB 連線失敗:', err);
 process.exit(1); // 如果連線失敗，終止應用程式
 });
 
-const buildPath = path.join(__dirname, 'build');
-if (fs.existsSync(buildPath)) {
-  app.use(express.static(buildPath));
 // 靜態文件處理（僅在 public 目錄存在時啟用）
 const publicPath = path.join(__dirname, 'public');
 if (fs.existsSync(publicPath)) {
-  app.use(express.static(publicPath));
+app.use(express.static(publicPath));
 
-  // ⭐⭐ 關鍵：所有非 /api 的路由，一律回傳 index.html 給 React 處理 ⭐⭐
-  // **只針對非 API 路由做處理**
+// **只針對非 API 路由做處理**
 app.get(/^\/(?!api).*/, (req, res) => {
-    res.sendFile(path.join(buildPath, 'index.html'));
-    res.sendFile(path.join(publicPath, 'index.html'));
+res.sendFile(path.join(publicPath, 'index.html'));
 });
 } else {
-  console.warn('Build directory not found. Static file serving disabled.');
-  console.warn('Public directory not found, static file serving disabled.');
+console.warn('Public directory not found, static file serving disabled.');
 }
 
 const PORT = process.env.PORT || 5000;
