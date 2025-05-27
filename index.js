@@ -7,9 +7,9 @@ const fs = require('fs');
 const mongoose = require('mongoose');
 const { OpenAI } = require('openai');
 
-const healthInfoRoutes = require('./routes/healthInfo'); // 引用路由模組
-const HealthLogRoutes = require('./routes/healthLog');
-const HealthyRecipeRoutes = require('./routes/healthyRecipe');
+const HealthInfo = require('./models/HealthInfo');
+const HealthLog = require('./models/HealthLog');
+const HealthyRecipe = require('./models/HealthyRecipe');
 
 const app = express();
 
@@ -48,16 +48,7 @@ app.post('/api/chat', async (req, res) => {
     const response = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
-        {
-          role: 'system',
-          content: [
-            '你是一個健康資訊助手，主要回答「疾病、營養、運動、心理」等健康領域問題；',
-            '請使用繁體中文。',
-            '當你回答時，**請使用以下結構**：',
-            '1. **重點摘要**：用 1～2 句話快速說明。',
-            '2. **詳細說明**：條列式或編號式列出關鍵步驟或要點。'
-          ].join('\n')
-        },
+        { role: 'system', content: '你是一個健康資訊助手，專注於提供疾病相關資訊和建議。請只使用繁體中文回答。' },
         { role: 'user', content: message }
       ]
     });
@@ -68,6 +59,61 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
+// Health Info endpoint - fetches Chinese seed data
+app.get('/api/health-info', async (req, res) => {
+  try {
+    const infos = await HealthInfo.find();
+    res.json(infos);
+  } catch (err) {
+    console.error('取得健康資訊錯誤：', err);
+    res.status(500).json({ error: 'Failed to fetch health info' });
+  }
+});
+
+app.post('/api/health-log', async (req, res) => {
+  try {
+    const log = await HealthLog.create(req.body);
+    res.json(log);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+app.get('/api/health-log', async (req, res) => {
+  const logs = await HealthLog.find().sort({ date: -1 });
+  res.json(logs);
+});
+
+// Healthy Recipes endpoint
+app.get('/api/healthy-recipes', async (req, res) => {
+  try {
+    const recipes = await HealthyRecipe.find();
+    res.json(recipes);
+  } catch (err) {
+    console.error('取得食譜列表錯誤：', err);
+    res.status(500).json({ error: 'Failed to fetch healthy recipes' });
+  }
+});
+
+// Filtered Recipes by food (supports Chinese & English via regex)
+app.get('/api/healthy-recipes-by-food', async (req, res) => {
+  try {
+    const { food } = req.query;
+    if (!food) {
+      return res.status(400).json({ error: '請提供食物名稱' });
+    }
+    const recipes = await HealthyRecipe.find({
+      food: { $regex: new RegExp(food, 'i') }
+    });
+    if (!recipes.length) {
+      return res.status(404).json({ error: '未找到該食物的食譜' });
+    }
+    res.json(recipes);
+  } catch (err) {
+    console.error('取得食譜時錯誤：', err);
+    res.status(500).json({ error: '伺服器錯誤' });
+  }
+});
+
 // Connect to MongoDB
 mongoose.connect(mongodbUri, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('✅ MongoDB 已連線'))
@@ -75,10 +121,6 @@ mongoose.connect(mongodbUri, { useNewUrlParser: true, useUnifiedTopology: true }
     console.error('❌ MongoDB 連線失敗：', err);
     process.exit(1);
   });
-
-app.use('/api/health-info', healthInfoRoutes);           // 使用路由
-app.use('/api/health-log',     HealthLogRoutes);
-app.use('/api/healthy-recipes', HealthyRecipeRoutes);
 
 // Serve static files if public folder exists
 const publicPath = path.join(__dirname, 'public');
